@@ -1,92 +1,118 @@
 # BARIS AI — Local AI Document Assistant
 
-BARIS AI is a local document-question-answering prototype built with Python, FastAPI, Ollama, Qwen, and ChromaDB.
+A locally running AI document assistant built with Python, Ollama, FastAPI, and ChromaDB.
+
+BARIS AI allows users to upload PDF documents, retrieve relevant information, and ask questions using a local Large Language Model (LLM).
 
 ## Features
 
-- Upload PDF documents through a web interface.
-- Extract text and split it into overlapping chunks.
-- Generate embeddings locally with Ollama (`embeddinggemma`).
-- Store document chunks in a persistent ChromaDB collection.
-- Retrieve relevant chunks for a question and generate an answer with Qwen.
-- Return source filenames and page numbers with answers.
+- **Local AI Chat:** Interact with a locally hosted language model.
+- **PDF Analysis:** Extract and analyze text from PDF documents.
+- **Retrieval-Augmented Generation (RAG):** Retrieve relevant document chunks before generating answers.
+- **Vector Database:** Store and search document embeddings with ChromaDB.
+- **REST API:** Access the application through FastAPI.
+- **Web Interface:** Upload PDFs and ask questions through a simple browser interface.
+- **Persistent Storage:** Keep indexed document embeddings between sessions.
 
-## Architecture
+## Technology Stack
+
+- Python
+- Ollama
+- Qwen 2.5 3B
+- EmbeddingGemma
+- ChromaDB
+- FastAPI
+- HTML, CSS, JavaScript
+
+## Project Structure
 
 ```text
-Browser (HTML/CSS/JavaScript)
-          |
-          v
-      FastAPI
-       /   \
-      v     v
- ChromaDB  Ollama
- vectors  embeddings + Qwen
+first-ai-assistant/
+├── static/
+│   └── index.html
+├── api.py
+├── baris_rag_chroma.py
+├── calculator.py
+├── list_models.py
+├── main.py
+├── pdf_analyzer.py
+├── rag_pdf.py
+├── requirements.txt
+└── README.md
 ```
 
-## Requirements
+## Getting Started
 
-- Python 3.10+
-- Ollama installed and running
-- Models downloaded:
+### 1. Install dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+### 2. Install Ollama
+
+Download Ollama:
+
+https://ollama.com/
+
+### 3. Download the required models
 
 ```bash
 ollama pull qwen2.5:3b
 ollama pull embeddinggemma
 ```
 
-## Setup
-
-Create and activate a virtual environment:
-
-```bash
-python -m venv .venv
-```
-
-Windows PowerShell:
-
-```powershell
-.venv\Scripts\Activate.ps1
-```
-
-Install dependencies:
-
-```bash
-python -m pip install -r requirements.txt
-```
-
-Place the application files in the project root:
-
-- `api.py`
-- `baris_rag_chroma.py`
-- `static/index.html`
-
-Start the API:
+### 4. Start the application
 
 ```bash
 python api.py
 ```
 
-Open:
+### 5. Open the application
 
-- Web app: http://127.0.0.1:8000/
-- API docs: http://127.0.0.1:8000/docs
-- Health check: http://127.0.0.1:8000/health
+Open your browser and visit:
 
-## Important privacy note
+```text
+http://127.0.0.1:8000
+```
 
-This project is configured for local development. Do not commit private PDFs, `uploads/`, `chroma_db/`, `.env` files, API keys, or personal conversation data to GitHub. The `.gitignore` excludes common local data paths.
+API documentation:
 
-## Current limitations
+```text
+http://127.0.0.1:8000/docs
+```
 
-- PDF text extraction does not perform OCR on scanned/image-only PDFs.
-- The current prototype does not include authentication or per-user document isolation.
-- The local development server is bound to `127.0.0.1`; it is not configured for public production deployment.
-- Answers can be incorrect; verify important information against the cited source pages.
+## API Endpoints
 
-## Roadmap
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | `/health` | Check API status |
+| POST | `/documents` | Upload and index PDF documents |
+| POST | `/ask` | Ask questions about indexed documents |
 
-- Authentication and per-user document access
-- Better chunking and retrieval evaluation
-- Streaming responses and chat history
-- Automated tests and deployment
+## What I Learned
+
+Through this project, I practiced:
+
+- Python application development
+- Working with local LLMs
+- API integration
+- REST API development
+- Vector databases and embeddings
+- Retrieval-Augmented Generation (RAG)
+- Document processing
+- Building a simple AI-powered web application
+
+## Future Improvements
+
+- User authentication
+- Better document management
+- Improved retrieval quality
+- Support for additional document formats
+- Cloud deployment
+
+## Developer
+
+**BARIS AI** — A personal AI engineering portfolio project.
+
+Built as part of my journey toward becoming an AI Automation Engineer and AI Application Developer.
