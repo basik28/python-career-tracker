@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+env/
+
+# Secrets
+.env
+.env.*
+!.env.example
+
+# Local data - do not publish user documents or vector database
+uploads/
+chroma_db/
+memory.json
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

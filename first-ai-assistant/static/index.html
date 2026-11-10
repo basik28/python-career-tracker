@@ -1,0 +1,302 @@
+
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BARIS AI</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #0b1020;
+            color: #ffffff;
+        }
+
+        .container {
+            max-width: 850px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 35px;
+        }
+
+        header h1 {
+            font-size: 42px;
+            color: #829cff;
+            margin-bottom: 8px;
+        }
+
+        header p {
+            color: #9ca9c0;
+        }
+
+        .card {
+            background: #151e33;
+            border: 1px solid #293650;
+            border-radius: 15px;
+            padding: 22px;
+            margin-bottom: 20px;
+        }
+
+        h2 {
+            font-size: 19px;
+            margin-top: 0;
+        }
+
+        input {
+            width: 100%;
+            padding: 14px;
+            border-radius: 8px;
+            border: 1px solid #34415d;
+            background: #0b1428;
+            color: white;
+            margin-bottom: 12px;
+        }
+
+        button {
+            background: #829cff;
+            color: #0b1020;
+            border: none;
+            padding: 13px 20px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: wait;
+        }
+
+        .status {
+            color: #a9b8d2;
+            margin-top: 12px;
+            font-size: 13px;
+        }
+
+        #answer {
+            background: #0b1428;
+            padding: 18px;
+            border-radius: 10px;
+            margin-top: 15px;
+            white-space: pre-wrap;
+            line-height: 1.7;
+            min-height: 70px;
+        }
+
+        #sources {
+            color: #a9b8d2;
+            font-size: 13px;
+            margin-top: 12px;
+        }
+
+        footer {
+            text-align: center;
+            color: #687894;
+            margin-top: 35px;
+            font-size: 12px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <header>
+        <h1>BARIS AI</h1>
+        <p>Your Personal AI Document Assistant</p>
+    </header>
+
+    <section class="card">
+        <h2>PDF Belgesi Yükle</h2>
+
+        <form id="uploadForm">
+            <input
+                type="file"
+                id="pdfFile"
+                accept=".pdf"
+                required
+            >
+
+            <button type="submit" id="uploadButton">
+                PDF Yükle
+            </button>
+        </form>
+
+        <div class="status" id="uploadStatus"></div>
+    </section>
+
+    <section class="card">
+        <h2>BARIS AI'ya Sor</h2>
+
+        <form id="askForm">
+            <input
+                type="text"
+                id="question"
+                placeholder="Belgen hakkında bir soru sor..."
+                required
+            >
+
+            <button type="submit" id="askButton">
+                Gönder
+            </button>
+        </form>
+
+        <div class="status" id="askStatus"></div>
+
+        <div id="answer">
+            Merhaba! Ben BARIS AI. Belgelerini analiz etmeye hazırım.
+        </div>
+
+        <div id="sources"></div>
+    </section>
+
+    <footer>
+        BARIS AI | Ollama + Qwen + ChromaDB + FastAPI
+    </footer>
+
+</div>
+
+<script>
+
+const uploadForm = document.getElementById("uploadForm");
+const askForm = document.getElementById("askForm");
+
+uploadForm.addEventListener("submit", async function(event) {
+
+    event.preventDefault();
+
+    const file = document.getElementById("pdfFile").files[0];
+
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const button = document.getElementById("uploadButton");
+    const status = document.getElementById("uploadStatus");
+
+    button.disabled = true;
+    status.textContent = "PDF analiz ediliyor...";
+
+    try {
+
+        const response = await fetch("/documents", {
+            method: "POST",
+            body: formData
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.detail || "Yükleme başarısız.");
+        }
+
+        status.textContent =
+            "PDF başarıyla eklendi. İşlenen parça: " +
+            data.chunks_added_or_updated;
+
+    } catch(error) {
+
+        status.textContent = "Hata: " + error.message;
+
+    } finally {
+
+        button.disabled = false;
+
+    }
+
+});
+
+
+askForm.addEventListener("submit", async function(event) {
+
+    event.preventDefault();
+
+    const question = document.getElementById("question").value.trim();
+
+    if (!question) return;
+
+    const button = document.getElementById("askButton");
+    const answer = document.getElementById("answer");
+    const status = document.getElementById("askStatus");
+    const sources = document.getElementById("sources");
+
+    button.disabled = true;
+    status.textContent = "BARIS AI düşünüyor...";
+    answer.textContent = "";
+    sources.textContent = "";
+
+    try {
+
+        const response = await fetch("/ask", {
+            method: "POST",
+
+            headers: {
+                "Content-Type": "application/json"
+            },
+
+            body: JSON.stringify({
+                question: question
+            })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.detail || "Soru yanıtlanamadı.");
+        }
+
+        answer.textContent = data.answer;
+
+        const uniqueSources = new Map();
+
+        (data.sources || []).forEach(source => {
+            uniqueSources.set(
+                source.filename + "-" + source.page,
+                source
+            );
+        });
+
+        sources.textContent = "Kaynaklar: ";
+
+        uniqueSources.forEach(source => {
+
+            const item = document.createElement("span");
+
+            item.textContent =
+                source.filename + " - Sayfa " + source.page + " | ";
+
+            sources.appendChild(item);
+
+        });
+
+        status.textContent = "Yanıt hazır.";
+
+    } catch(error) {
+
+        answer.textContent = "Bir hata oluştu.";
+        status.textContent = error.message;
+
+    } finally {
+
+        button.disabled = false;
+
+    }
+
+});
+
+</script>
+
+</body>
+</html>
